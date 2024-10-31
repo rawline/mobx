@@ -23,8 +23,9 @@ const RepositoryList: React.FC = observer(() => {
         }
     }, []);
 
-    const scrollHandler = (e: any) => {
-        if (e.target.documentElement.scrollHeight - (e.target.documentElement.scrollTop + window.innerHeight) < 300) {
+    const scrollHandler = (e: Event) => {
+        const target = e.target as Document;
+        if (target.documentElement.scrollHeight - (target.documentElement.scrollTop + window.innerHeight) < 300) {
             setIsFetching(true);
         }
     };

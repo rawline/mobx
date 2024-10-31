@@ -1,32 +1,57 @@
-// import { render, screen, fireEvent } from '@testing-library/react';
-// import ListItem from './ListItem';
-// import repositoryStore from '../stores/repositoryStore';
-// import '@testing-library/jest-dom'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import ListItem from './ListItem';
+import { MantineProvider } from '@mantine/core';
+import '@testing-library/jest-dom';
+import repositoryStore from '../stores/repositoryStore';
 
-// const mockRepo = { id: 1, name: 'Repo1', html_url: 'http://example.com', description: 'Description' };
+const mockRepo = { id: 1, name: 'Repo1', html_url: 'http://example.com', description: 'Description' };
 
-// describe('ListItem', () => {
-//   it('ListItem', () => {
-//     render(<ListItem repository={mockRepo} />);
-//   })
-//   it('renders repository details', () => {
-//     render(<ListItem repository={mockRepo} />);
-//     expect(screen.getByText('Repo1')).toBeInTheDocument();
-//   });
+const customRender = (ui: React.ReactElement) => {
+  return render(<MantineProvider>{ui}</MantineProvider>);
+};
 
-//   it('allows editing a repository name', () => {
-//     render(<ListItem repository={mockRepo} />);
-//     fireEvent.click(screen.getByText('Edit Name'));
-//     const input = screen.getByDisplayValue('Repo1');
-//     fireEvent.change(input, { target: { value: 'New Name' } });
-//     fireEvent.click(screen.getByText('Save'));
+beforeAll(() => {
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+      addEventListener: jest.fn(),
+      removeEventListener: jest.fn(),
+      dispatchEvent: jest.fn(),
+    }),
+  });
+});
 
-//     expect(repositoryStore.repositories[0].name).toBe('New Name');
-//   });
+describe('ListItem', () => {
+  beforeEach(() => {
+    repositoryStore.repositories = [{ ...mockRepo }];
+  });
 
-//   it('deletes a repository on button click', () => {
-//     render(<ListItem repository={mockRepo} />);
-//     fireEvent.click(screen.getByText('Delete'));
-//     expect(repositoryStore.repositories.find(repo => repo.id === mockRepo.id)).toBeUndefined();
-//   });
-// });
+  it('renders repository details', () => {
+    customRender(<ListItem repository={mockRepo} />);
+    expect(screen.getByText('Repo1')).toBeInTheDocument();
+  });
+
+  it('allows editing a repository name', async () => {
+    customRender(<ListItem repository={mockRepo} />);
+
+    fireEvent.click(screen.getByText('Edit Name'));
+    const input = screen.getByDisplayValue('Repo1');
+    fireEvent.change(input, { target: { value: 'New Name' } });
+    fireEvent.click(screen.getByText('Save'));
+
+    await waitFor(() => {
+      expect(repositoryStore.repositories[0].name).toBe('New Name');
+    });
+  });
+
+  it('deletes a repository on button click', () => {
+    customRender(<ListItem repository={mockRepo} />);
+    fireEvent.click(screen.getByText('Delete'));
+    expect(repositoryStore.repositories.find(repo => repo.id === mockRepo.id)).toBeUndefined();
+  });
+});

@@ -4,10 +4,10 @@
 
 ## Использование
 ### 1. Выполните
-```npm i 
+```javascript
+npm i 
 ```
 ### 2. Что бы запустить тесты выполните
 ```javascript
-    npm run test
+npm run test
 ```
-
